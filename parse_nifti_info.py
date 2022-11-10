@@ -7,6 +7,7 @@ import logging  # to print
 import pandas   # for DataFrame
 import numpy as np
 import io       # ?
+import datetime # for timestamp
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -243,6 +244,6 @@ df['bval_count'] = bval_count
 
 # THE END / write file
 logging.info('writing file')
-df.to_csv('dataset.tsv',sep='\t')
+timestamp = datetime.datetime.now().strftime('%Y_%m_%d')
+df.to_csv(f'{timestamp}_epimicro.tsv',sep='\t')
 
-0
