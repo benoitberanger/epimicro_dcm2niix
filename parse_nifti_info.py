@@ -11,40 +11,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 main_dir = '/network/lustre/iss02/cenir/analyse/irm/users/benoit.beranger/epimicro/nifti'
 
-# pat_dir_list = glob.glob(main_dir + '/pat*')
-# pat_id_list = [os.path.basename(p) for p in pat_dir_list]
-#
-# template_dict_seq = {
-#     'is_present': None,  # will be True or False
-#
-#     # json
-#     'PatientName': None,  # string
-#     'AcquisitionDateTime': None,  # string
-#     'MagneticFieldStrength': None,  # float
-#     'ManufacturersModelName': None,  # string
-#     'ProcedureStepDescription': None,  # string
-#     'ProtocolName': None, # string
-#     'SeriesDescription': None,  # string
-#
-#     # nifti header
-#     'matrix': None,  # [int, int, int]
-#     'fov': None,  # [float, float, float]
-#     'resolution': None,  # [float, float, float]
-#     }
-#
-# template_dict_pat = {
-#     'pat_id': None,
-#
-#     '3DT1': template_dict_seq,
-#     'CTpost': template_dict_seq,
-#     'T1post': template_dict_seq,
-#     'radio': None,
-#
-#
-#     'DTI-RS': None
-#
-# }
-
 logging.info(f'main dir : {main_dir}')
 
 # get all files recursively
@@ -54,10 +20,12 @@ for root, dirs, files in os.walk(main_dir):
         file_list.append(os.path.join(root, file))
 logging.info(f'N files = {len(file_list)}')
 
+
 # get only nifti files
 r = re.compile(r"(.*nii$)|(.*nii.gz$)$")
 file_list_nii = list(filter(r.match, file_list))
 logging.info(f'N files nii = {len(file_list_nii)}')
+
 
 # check is 1 nifti = 1 json
 file_list_json = []
@@ -76,6 +44,7 @@ for file in file_list_nii:
         file_list_json.append(jsonfile)
 
 logging.info(f'N files json = {len(file_list_json)}')
+
 
 # read all json
 seq = []
@@ -115,6 +84,7 @@ def int_or_round3(input):
             else:
                 output_list.append( int_or_round3__scalar(elem) )
         return output_list
+
 
 # add info from nifti header
 Matrix     = []
@@ -158,6 +128,18 @@ df['Matrix'    ] = Matrix
 df['Resolution'] = Resolution
 df['FoV'       ] = FoV
 
+
+# multi-line -> single-line
+def clean_address(input):
+    if type(input) is str:
+        return re.sub('[^a-zA-Z0-9_]+', ' ', input)
+    else:
+        return input
+
+df['InstitutionAddress'] = df['InstitutionAddress'].apply(clean_address)
+
+# THE END / write file
+logging.info('writing file')
 df.to_csv('dataset.tsv',sep='\t')
 
 0
